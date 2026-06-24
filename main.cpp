@@ -661,15 +661,15 @@ void handle_client(SOCKET client_socket) {
     }
 
     if (clean_path == "/" || clean_path == "/index.html") {
-        std::string content = read_file_to_string(start_dir + "/web/index.html");
+        std::string content = read_file_to_string(start_dir + "/index.html");
         send_response(client_socket, "200 OK", "text/html; charset=utf-8", content);
     }
     else if (clean_path == "/style.css") {
-        std::string content = read_file_to_string(start_dir + "/web/style.css");
+        std::string content = read_file_to_string(start_dir + "/style.css");
         send_response(client_socket, "200 OK", "text/css; charset=utf-8", content);
     }
     else if (clean_path == "/app.js") {
-        std::string content = read_file_to_string(start_dir + "/web/app.js");
+        std::string content = read_file_to_string(start_dir + "/app.js");
         send_response(client_socket, "200 OK", "application/javascript; charset=utf-8", content);
     }
     else if (clean_path == "/api/get-image") {
