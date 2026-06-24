@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMP Steganography & Pattern Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <!-- Glow effects in background -->
+    <div class="glow-sphere sphere-1"></div>
+    <div class="glow-sphere sphere-2"></div>
+
+    <!-- Login/Register Overlay -->
+    <div id="auth-overlay" class="overlay active">
+        <div class="glass-card auth-card">
+            <div class="auth-header">
+                <i class="fa-solid fa-user-shield auth-icon"></i>
+                <h2>Авторизація користувача</h2>
+                <p>Увійдіть або зареєструйтесь для продовження</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <button id="tab-login" class="tab-btn active">Вхід</button>
+                <button id="tab-register" class="tab-btn">Реєстрація</button>
+            </div>
+
+            <form id="auth-form">
+                <div class="input-group">
+                    <label for="username"><i class="fa-solid fa-user"></i> Ім'я користувача</label>
+                    <input type="text" id="username" required placeholder="Введіть ваш логін">
+                </div>
+                <div class="input-group">
+                    <label for="password"><i class="fa-solid fa-lock"></i> Пароль</label>
+                    <input type="password" id="password" required placeholder="Введіть ваш пароль">
+                </div>
+                <div id="auth-error" class="error-msg hidden"></div>
+                <button type="submit" id="btn-auth-submit" class="glow-btn">
+                    <span id="auth-submit-text">Увійти</span>
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-card">
+            <div class="logo-area">
+                <i class="fa-solid fa-microchip logo-icon"></i>
+                <h1>BMP Studio</h1>
+            </div>
+
+            <div class="user-profile">
+                <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
+                <div class="user-info">
+                    <span id="user-display-name">Гість</span>
+                    <span class="user-status"><i class="fa-solid fa-circle status-dot"></i> Online</span>
+                </div>
+                <button id="btn-logout" title="Вийти з акаунта"><i class="fa-solid fa-power-off"></i></button>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="workspace"><i class="fa-solid fa-wand-magic-sparkles"></i> Робочий простір</button>
+                <button class="nav-item" data-tab="history"><i class="fa-solid fa-history"></i> Історія сесії</button>
+                <button class="nav-item" data-tab="info"><i class="fa-solid fa-circle-info"></i> Інформація</button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span>Командний проект C++</span>
+                <span class="version">v1.0.0</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Workspace Tab -->
+            <section id="tab-content-workspace" class="tab-content active">
+                <div class="grid-layout">
+                    <!-- Left: File Selector and Preview -->
+                    <div class="column glass-card workspace-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-file-image card-icon"></i>
+                            <h2>Вихідний BMP файл</h2>
+                        </div>
+                        
+                        <div class="file-picker-area">
+                            <div class="selected-file-info">
+                                <span class="label">Шлях до BMP файлу:</span>
+                                <input type="text" id="manual-file-path" class="path-input" placeholder="Введіть абсолютний шлях до BMP або натисніть «Огляд»">
+                            </div>
+                            <div class="action-buttons" style="margin-top: 18px; margin-left: 10px;">
+                                <button id="btn-select-file" class="action-btn" title="Відкрити системний провідник"><i class="fa-solid fa-folder-open"></i> Огляд</button>
+                                <input type="file" id="browser-file-picker" accept=".bmp" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="dialog-checkbox-area" style="margin-top: 10px; font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="use-system-dialogs" style="cursor: pointer;">
+                            <label for="use-system-dialogs" style="cursor: pointer; user-select: none;">
+                                <i class="fa-solid fa-window-restore" style="color: var(--accent-cyan); margin-right: 4px;"></i>
+                                Використовувати системні діалоги Windows (потребує запуску в терміналі)
+                            </label>
+                        </div>
+
+                        <div class="preview-area">
+                            <div id="preview-placeholder" class="preview-placeholder">
+                                <i class="fa-regular fa-image placeholder-icon"></i>
+                                <p>Завантажте BMP зображення для перегляду</p>
+                            </div>
+                            <canvas id="canvas-preview" class="hidden"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Right: Tool Panels -->
+                    <div class="column grid-rows">
+                        <!-- Panel 1: Pattern Generator -->
+                        <div class="glass-card tool-card">
+                            <div class="card-header">
+                                <i class="fa-solid fa-palette card-icon"></i>
+                                <h2>Генератор бітової карти</h2>
+                            </div>
+                            
+                            <div class="control-group">
+                                <label for="generator-mode">Спосіб побудови карти</label>
+                                <select id="generator-mode" class="styled-select">
+                                    <option value="wave">1. Інтерференція хвиль (Moiré)</option>
+                                    <option value="plasma">2. Математична плазма</option>
+                                    <option value="bitwise">3. Побітові XOR-візерунки</option>
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="color-combination">Колірна комбінація</label>
+                                <select id="color-combination" class="styled-select">
+                                    <!-- Options will be populated dynamically based on selected mode -->
+                                </select>
+                            </div>
+
+                            <div id="generator-status" class="status-msg hidden"></div>
+
+                            <button id="btn-generate" class="glow-btn-secondary" disabled>
+                                <span>Згенерувати новий BMP</span>
+                                <i class="fa-solid fa-gears"></i>
+                            </button>
+                        </div>
+
+                        <!-- Panel 2: Steganography -->
+                        <div class="glass-card tool-card">
+                            <div class="card-header">
+                                <i class="fa-solid fa-user-secret card-icon"></i>
+                                <h2>Стеганографія LSB</h2>
+                            </div>
+                            
+                            <div class="stego-tabs">
+                                <button id="stego-tab-embed" class="stego-tab-btn active">Вкласти повідомлення</button>
+                                <button id="stego-tab-extract" class="stego-tab-btn">Зчитати повідомлення</button>
+                            </div>
+
+                            <!-- Embed Section -->
+                            <div id="stego-sect-embed" class="stego-section">
+                                <div class="control-group">
+                                    <label for="embed-message">Текст повідомлення</label>
+                                    <textarea id="embed-message" class="styled-textarea" placeholder="Введіть секретний текст..."></textarea>
+                                </div>
+                                <div id="stego-embed-status" class="status-msg hidden"></div>
+                                <button id="btn-embed" class="glow-btn-secondary" disabled>
+                                    <span>Вбудувати та зберегти</span>
+                                    <i class="fa-solid fa-file-export"></i>
+                                </button>
+                            </div>
+
+                            <!-- Extract Section -->
+                            <div id="stego-sect-extract" class="stego-section hidden">
+                                <div class="control-group">
+                                    <label for="extracted-message">Розшифрований текст</label>
+                                    <textarea id="extracted-message" class="styled-textarea" readonly placeholder="Тут з'явиться розшифрований текст..."></textarea>
+                                </div>
+                                <div id="stego-extract-status" class="status-msg hidden"></div>
+                                <button id="btn-extract" class="glow-btn-secondary" disabled>
+                                    <span>Зчитати з файлу</span>
+                                    <i class="fa-solid fa-unlock-keyhole"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Tab -->
+            <section id="tab-content-history" class="tab-content">
+                <div class="glass-card history-container">
+                    <div class="card-header">
+                        <i class="fa-solid fa-history card-icon"></i>
+                        <h2>Історія сеансу роботи</h2>
+                        <p>Останні дії та налаштування, збережені у вашому профілі</p>
+                    </div>
+
+                    <div class="history-grid">
+                        <div class="history-column">
+                            <h3><i class="fa-solid fa-file-image"></i> Останні файли</h3>
+                            <ul id="history-files" class="history-list">
+                                <li class="empty-item">Історія порожня</li>
+                            </ul>
+                        </div>
+                        <div class="history-column">
+                            <h3><i class="fa-solid fa-palette"></i> Останні режими</h3>
+                            <ul id="history-modes" class="history-list">
+                                <li class="empty-item">Історія порожня</li>
+                            </ul>
+                        </div>
+                        <div class="history-column">
+                            <h3><i class="fa-solid fa-paper-plane"></i> Вкладені тексти</h3>
+                            <ul id="history-embedded" class="history-list">
+                                <li class="empty-item">Історія порожня</li>
+                            </ul>
+                        </div>
+                        <div class="history-column">
+                            <h3><i class="fa-solid fa-envelope-open-text"></i> Отримані тексти</h3>
+                            <ul id="history-extracted" class="history-list">
+                                <li class="empty-item">Історія порожня</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Info Tab -->
+            <section id="tab-content-info" class="tab-content">
+                <div class="info-grid">
+                    <div class="glass-card info-card">
+                        <h3><i class="fa-solid fa-book-open"></i> Інструкція користувача</h3>
+                        <div class="info-text">
+                            <ol>
+                                <li><strong>Авторизація</strong>: Введіть логін та пароль, щоб увійти. Програма запам'ятає ваші останні 3 дії.</li>
+                                <li><strong>Вибір файлу</strong>: Натисніть «Вибрати файл» та оберіть вихідний BMP-малюнок (24-бітний формат). Він служитиме шаблоном.</li>
+                                <li><strong>Генерація візерунків</strong>:
+                                    <ul>
+                                        <li>Оберіть один із 3-х математичних алгоритмів.</li>
+                                        <li>Оберіть колірну схему.</li>
+                                        <li>Натисніть «Згенерувати новий BMP» та вкажіть шлях для збереження у системному діалозі.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Стеганографія LSB</strong>:
+                                    <ul>
+                                        <li>Для <em>вкладення</em>: Введіть текст, натисніть «Вбудувати та зберегти», вкажіть шлях до нового файлу.</li>
+                                        <li>Для <em>зчитування</em>: Оберіть файл-контейнер і натисніть «Зчитати з файлу».</li>
+                                    </ul>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="glass-card info-card">
+                        <h3><i class="fa-solid fa-circle-question"></i> Про програму</h3>
+                        <div class="info-text">
+                            <p>Цей застосунок розроблено як командний проект у межах курсу «Проектування програмного забезпечення».</p>
+                            <p><strong>Функціональні особливості:</strong></p>
+                            <ul>
+                                <li>Робота із 24-бітним колірним форматом BMP (без стиснення).</li>
+                                <li>Стеганографічний алгоритм найменшого значущого біта (LSB) зі швидким декодуванням.</li>
+                                <li>Математичне моделювання візерунків у реальному часі на мові C++.</li>
+                                <li>Багатокористувацький режим із сесійним збереженням історії.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="glass-card info-card full-width">
+                        <h3><i class="fa-solid fa-users"></i> Про авторів</h3>
+                        <div class="info-text team-info">
+                            <p>Проект виконано командою розробників:</p>
+                            <div class="team-grid">
+                                <div class="team-member">
+                                    <div class="member-avatar"><i class="fa-solid fa-code"></i></div>
+                                    <h4>Розробник C++ (Бекенд)</h4>
+                                    <p>Відповідальний за парсер BMP, математичні алгоритми візерунків, LSB-стеганографію та розробку локального HTTP-сервера.</p>
+                                </div>
+                                <div class="team-member">
+                                    <div class="member-avatar"><i class="fa-solid fa-laptop-code"></i></div>
+                                    <h4>UI/UX Дизайнер & Frontend</h4>
+                                    <p>Відповідальний за розробку адаптивного скляного інтерфейсу (Glassmorphism), інтерактивність веб-частини та Canvas-візуалізацію.</p>
+                                </div>
+                                <div class="team-member">
+                                    <div class="member-avatar"><i class="fa-solid fa-shield-halved"></i></div>
+                                    <h4>QA & Спеціаліст з безпеки</h4>
+                                    <p>Відповідальний за тестування функцій авторизації, перевірку стійкості LSB кодування та валідацію BMP-заголовків.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

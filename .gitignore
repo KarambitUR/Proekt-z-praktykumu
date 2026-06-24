@@ -1,0 +1,21 @@
+# Build artifacts
+app.exe
+*.exe
+*.o
+*.obj
+
+# Database and session data
+users.json
+
+# Local / Temporary file uploads and outputs
+uploads/
+*_generated.bmp
+*_stego.bmp
+test_temp.bmp
+test_stego.bmp
+test_pattern.bmp
+extracted_text.txt
+
+# Python temporary files
+__pycache__/
+*.pyc
