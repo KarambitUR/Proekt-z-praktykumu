@@ -19,3 +19,7 @@ extracted_text.txt
 # Python temporary files
 __pycache__/
 *.pyc
+
+# Local report files (do not commit to Git)
+звіт_проект.md
+
